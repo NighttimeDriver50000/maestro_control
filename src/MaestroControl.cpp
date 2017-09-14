@@ -1,5 +1,6 @@
 #include "MaestroControl.hpp"
 #include <algorithm>
+#include <unistd.h>
 #include <string>
 
 // FUNCTIONS //
@@ -124,43 +125,7 @@ void MaestroControl::shell(istream &in, ostream &out, bool interactive) {
     }
 }
 
-void MaestroControl::executeShellCommand(string command,
-        vector<string> arguments, ostream &out) {
-    if (command == "help") {
-        out << "Shell commands:\n"
-            << "    exit        Exit the shell.\n"
-            << "    help        Display this help.\n"
-            << "    showargs    Display the passed arguments.\n"
-            << "Maestro commands:\n"
-            << "    open    target\n"
-            << "For these, use '<command> -h ;' for more information.\n";
-    } else if (command == "showargs") {
-        for (size_t i = 0; i < arguments.size(); ++i) {
-            out << "[" << i << "]: '" << arguments[i] << "'\n";
-        }
-    } else if (command == "open") {
-        if (arguments.size() == 1 && arguments[0] != "-h") {
-            cout << arguments[0].c_str() << "\n";
-            open(arguments[0].c_str());
-        } else {
-            out << "usage: open <device file>\n"
-                << "    Connect to the Maestro\n";
-        }
-    } else if (command == "target") {
-        if (arguments.size() == 2) {
-            setTarget(static_cast<uint8_t>(atoi(arguments[0].c_str())),
-                    static_cast<float>(atof(arguments[1].c_str())));
-        } else {
-            out << "usage: target <channel> <target>\n"
-                << "    Set the target for a servo.\n"
-                << "    <target> is in microseconds.\n";
-        }
-    } else {
-        out << "'" << command << "' is not a valid command.\n"
-            << "Type 'help ;' for help.\n";
-    }
-    flush();
-}
+// executeShellCommand is defined at the end of the file due to its length.
 
 void MaestroControl::flush() {
     serial.flush();
@@ -248,3 +213,92 @@ int main(int argc, char **argv) {
     ctl.shell(cin, cout, true);
     return 0;
 }
+
+void MaestroControl::executeShellCommand(string command,
+        vector<string> arguments, ostream &out) {
+    if (command == "help") {
+        out << "Shell commands:\n"
+            << "    exit        Exit the shell.\n"
+            << "    help        Display this help.\n"
+            << "    showargs    Display the passed arguments.\n"
+            << "Maestro commands:\n"
+            << "    multitarget open    rangetargets    target\n"
+            << "Utility commands:\n"
+            << "    sleep   usleep\n"
+            << "For the mastro and utility commands, use '<command> -h ;'\n"
+            << "for more information.\n";
+    } else if (command == "showargs") {
+        for (size_t i = 0; i < arguments.size(); ++i) {
+            out << "[" << i << "]: '" << arguments[i] << "'\n";
+        }
+    } else if (command == "open") {
+        if (arguments.size() == 1 && arguments[0] != "-h") {
+            cout << arguments[0].c_str() << "\n";
+            open(arguments[0].c_str());
+        } else {
+            out << "usage: open <device file>\n"
+                << "    Connect to the Maestro\n";
+        }
+    } else if (command == "target") {
+        if (arguments.size() == 2) {
+            setTarget(static_cast<uint8_t>(atoi(arguments[0].c_str())),
+                    static_cast<float>(atof(arguments[1].c_str())));
+        } else {
+            out << "usage: target <channel> <target>\n"
+                << "    Set the target for a servo.\n"
+                << "    <target> is in microseconds.\n";
+        }
+    } else if (command == "multitarget") {
+        if (arguments.size() % 2 == 0) {
+            vector<struct Target> targets;
+            for (size_t i = 0; i < arguments.size(); i += 2) {
+                Target t;
+                t.channel = static_cast<uint8_t>(atoi(arguments[i].c_str()));
+                t.target_usec = static_cast<float>(atof(arguments[i+1].c_str()));
+                targets.push_back(t);
+            }
+            setMultiTarget(targets);
+        } else {
+            out << "usage: multitarget [<channel> <target>]...\n"
+                << "    Set the targets for multiple servos.\n"
+                << "    <target> is in microseconds.\n";
+        }
+    } else if (command == "rangetargets") {
+        if (arguments.size() == 3) {
+            setRangeTargets(static_cast<uint8_t>(atoi(arguments[0].c_str())),
+                    static_cast<uint8_t>(atoi(arguments[1].c_str())),
+                    static_cast<float>(atof(arguments[2].c_str())));
+        } else {
+            out << "usage: rangetargets <start> <bound> <target>\n"
+                << "    Set the target for a range of servos.\n"
+                << "    <start> is inclusive; <bound> is exclusive.\n"
+                << "    <target> is in microseconds.\n";
+        }
+    } else if (command == "zerotargets") {
+        if (arguments.size() == 1) {
+            zeroTargets(static_cast<uint8_t>(atoi(arguments[0].c_str())));
+        } else {
+            out << "usage: zerotargets <count>\n"
+                << "    Alias for rangetargets 0 <count> 0.\n";
+        }
+    } else if (command == "sleep") {
+        if (arguments.size() == 1) {
+            sleep(static_cast<unsigned>(atoi(arguments[0].c_str())));
+        } else {
+            out << "usage: sleep <sec>\n"
+                << "    Sleep for <sec> seconds.\n";
+        }
+    } else if (command == "usleep") {
+        if (arguments.size() == 1) {
+            usleep(static_cast<useconds_t>(atoi(arguments[0].c_str())));
+        } else {
+            out << "usage: usleep <usec>\n"
+                << "    Sleep for <usec> microseconds.\n";
+        }
+    } else {
+        out << "'" << command << "' is not a valid command.\n"
+            << "Type 'help ;' for help.\n";
+    }
+    flush();
+}
+
