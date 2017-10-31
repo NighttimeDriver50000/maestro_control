@@ -16,8 +16,11 @@ void toLowerCase(string &s) {
 // PUBLIC //
 
 void MaestroControl::open(const char *filename) {
-    serial.exceptions(fstream::badbit | fstream::failbit | fstream::eofbit);
+    //serial.exceptions(fstream::badbit | fstream::failbit | fstream::eofbit);
     serial.open(filename, ios_base::in | ios_base::out | ios_base::binary);
+    printSerialFlags();
+    serial.clear();
+    cerr << "Cleared serial state.\n";
 }
 
 void MaestroControl::setTarget(uint8_t channel, float target_usec) {
@@ -228,6 +231,11 @@ void MaestroControl::flush() {
 
 // PRIVATE //
 
+void MaestroControl::printSerialFlags() {
+    cerr << "Serial state: good: " << serial.good() << ", eof: " << serial.eof()
+            << ", fail: " << serial.fail() << ", bad: " << serial.bad() << "\n";
+}
+
 inline void MaestroControl::rawWrite(const uint8_t bytes_array[]) {
     vector<uint8_t> bytes(bytes_array, bytes_array
             + sizeof(bytes_array) / sizeof(uint8_t));
@@ -236,11 +244,13 @@ inline void MaestroControl::rawWrite(const uint8_t bytes_array[]) {
 
 void MaestroControl::rawWrite(const vector<uint8_t> &bytes) {
     serial.write(reinterpret_cast<const char *>(&bytes[0]), bytes.size());
+    printSerialFlags();
 }
 
 vector<uint8_t> *MaestroControl::rawRead(size_t count) {
     char *buffer = new char[count];
     serial.read(buffer, count);
+    printSerialFlags();
     vector<uint8_t> *vec = new vector<uint8_t>(
             reinterpret_cast<uint8_t *>(buffer),
             reinterpret_cast<uint8_t *>(buffer + count));
@@ -309,8 +319,10 @@ int main(int argc, char **argv) {
             << "    connect to the Maestro on startup.\n";
         return 1;
     }
+    cerr << ctl.getErrors() << "\n";
+    ctl.setTarget(0, 0);
     //ctl.zeroTargets(5);
-    ctl.shell(cin, cout, true);
+    //ctl.shell(cin, cout, true);
     return 0;
 }
 
@@ -430,21 +442,21 @@ void MaestroControl::executeShellCommand(string command,
             }
         } else {
             out << "usage: moving\n"
-                << "    Get whether servos are moving.";
+                << "    Get whether servos are moving.\n";
         }
     } else if (command == "home") {
         if (arguments.size() == 0) {
             goHome();
         } else {
             out << "usage: home\n"
-                << "    Move all servos to home positions.";
+                << "    Move all servos to home positions.\n";
         }
     } else if (command == "errors") {
         if (arguments.size() == 0) {
             printErrors(getErrors(), out);
         } else {
             out << "usage: errors\n"
-                << "    Print and clear the error register."
+                << "    Print and clear the error register.\n"
                 << "    Does nothing in interactive mode, as errors are\n"
                 << "    always reported.\n";
         }

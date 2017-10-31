@@ -60,6 +60,8 @@ public:
 private:
     fstream serial;
 
+    // Prints the error flags of the serial object
+    void printSerialFlags();
     // Sends bytes to the Maestro
     inline void rawWrite(const uint8_t bytes_array[]);
     void rawWrite(const vector<uint8_t> &bytes);
