@@ -1,3 +1,6 @@
+// Copyright 2017 Chris McKinney, Sam Dauchert, and University of South Carolina.
+// All rights reserved.
+
 #include "MaestroControl.hpp"
 #include <algorithm>
 #include <unistd.h>
@@ -17,10 +20,12 @@ void toLowerCase(string &s) {
 
 void MaestroControl::open(const char *filename) {
     //serial.exceptions(fstream::badbit | fstream::failbit | fstream::eofbit);
-    serial.open(filename, ios_base::in | ios_base::out | ios_base::binary);
+    //serial.open(filename, ios_base::in | ios_base::out | ios_base::binary);
+    serial.open(filename);
     printSerialFlags();
-    serial.clear();
-    cerr << "Cleared serial state.\n";
+    //serial.clear();
+    serial.clearError();
+    //cerr << "Cleared serial state.\n";
 }
 
 void MaestroControl::setTarget(uint8_t channel, float target_usec) {
@@ -160,8 +165,11 @@ void MaestroControl::shell(istream &in, ostream &out, bool interactive) {
     string word;
     // Show the interactive prompt
     if (interactive) {
-        //out << "The following errors occurred before or during startup:\n";
-        //printErrors(getErrors(), out);
+        uint16_t startup_errors = getErrors();
+        if (startup_errors) {
+            out << "The following errors occurred before or during startup:\n";
+            printErrors(startup_errors, out);
+        }
         out << "> ";
         out.flush();
     }
@@ -212,7 +220,10 @@ void MaestroControl::shell(istream &in, ostream &out, bool interactive) {
             // Clear the command and show the prompt
             raw_command.clear();
             if (interactive) {
-                //printErrors(getErrors(), out);
+                uint16_t command_errors = getErrors();
+                if (command_errors) {
+                    printErrors(getErrors(), out);
+                }
                 out << "> ";
                 out.flush();
             }
@@ -226,14 +237,17 @@ void MaestroControl::shell(istream &in, ostream &out, bool interactive) {
 // executeShellCommand is defined at the end of the file due to its length.
 
 void MaestroControl::flush() {
-    serial.flush();
+    //serial.flush();
 }
 
 // PRIVATE //
 
 void MaestroControl::printSerialFlags() {
-    cerr << "Serial state: good: " << serial.good() << ", eof: " << serial.eof()
-            << ", fail: " << serial.fail() << ", bad: " << serial.bad() << "\n";
+    //cerr << "Serial state: good: " << serial.good() << ", eof: " << serial.eof()
+    //        << ", fail: " << serial.fail() << ", bad: " << serial.bad() << "\n";
+    if (serial.getError()) {
+        serial.printError();
+    }
 }
 
 inline void MaestroControl::rawWrite(const uint8_t bytes_array[]) {
@@ -319,10 +333,10 @@ int main(int argc, char **argv) {
             << "    connect to the Maestro on startup.\n";
         return 1;
     }
-    cerr << ctl.getErrors() << "\n";
-    ctl.setTarget(0, 0);
+    //cerr << ctl.getErrors() << "\n";
+    //ctl.setTarget(0, 0);
     //ctl.zeroTargets(5);
-    //ctl.shell(cin, cout, true);
+    ctl.shell(cin, cout, true);
     return 0;
 }
 

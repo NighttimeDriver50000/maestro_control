@@ -1,3 +1,6 @@
+// Copyright 2017 Chris McKinney, Sam Dauchert, and University of South Carolina.
+// All rights reserved.
+
 #include <fstream>
 #include <iostream>
 #include <stdint.h>

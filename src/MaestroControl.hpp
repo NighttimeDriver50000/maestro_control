@@ -1,9 +1,14 @@
+// Copyright 2017 Chris McKinney, Sam Dauchert, and University of South Carolina.
+// All rights reserved.
+
 #ifndef MAESTRO_CONTROL_HPP
 #define MAESTRO_CONTROL_HPP
-#include <fstream>
+//#include <fstream>
 #include <iostream>
+#include <stddef.h>
 #include <stdint.h>
 #include <vector>
+#include "MaestroSerial.hpp"
 
 using namespace std;
 
@@ -58,7 +63,8 @@ public:
     void flush();
 
 private:
-    fstream serial;
+    //fstream serial;
+    MaestroSerial serial;
 
     // Prints the error flags of the serial object
     void printSerialFlags();
