@@ -4,14 +4,15 @@
 #ifndef MAESTRO_SERIAL_HPP
 #define MAESTRO_SERIAL_HPP
 #include <stddef.h>
+#include <unistd.h>
 
 using namespace std;
 
 class MaestroSerial {
 public:
     void open(const char *filename);
-    void write(const char *bytes, size_t count);
-    void read(char *bytes, size_t count);
+    void write(const char *bytes, ssize_t count);
+    void read(char *bytes, ssize_t count);
     int getError();
     void printError();
     void clearError();

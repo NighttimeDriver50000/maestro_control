@@ -1,4 +1,4 @@
-maestro_shell: MaestroSerial.cpp MaestroControl.cpp
+maestro_shell: MaestroShell.cpp MaestroSerial.cpp MaestroControl.cpp
 	g++ -o $@ $^
 
 clean:

@@ -5,7 +5,6 @@
 #include <errno.h>
 #include <error.h>
 #include <fcntl.h>
-#include <unistd.h>
 
 // PUBLIC //
 
@@ -14,7 +13,7 @@ void MaestroSerial::open(const char *filename) {
     is_open = true;
 }
 
-void MaestroSerial::write(const char *bytes, size_t count) {
+void MaestroSerial::write(const char *bytes, ssize_t count) {
     if (is_open) {
         ssize_t actual = ::write(fd, bytes, count);
         error_code = errno;
@@ -26,7 +25,7 @@ void MaestroSerial::write(const char *bytes, size_t count) {
     }
 }
 
-void MaestroSerial::read(char *bytes, size_t count) {
+void MaestroSerial::read(char *bytes, ssize_t count) {
     if (is_open) {
         ssize_t actual = ::read(fd, bytes, count);
         error_code = errno;
