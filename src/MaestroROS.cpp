@@ -5,11 +5,10 @@
 #include <functional>
 #include "MaestroROS.hpp"
 
-MaestroROS::MaestroROS(ros::NodeHandle nh, const char *tty,
+MaestroROS::MaestroROS(ros::NodeHandle &nh, const char *tty,
         uint8_t channel_count, const map<uint8_t, string> &channel_names) {
     ctl.open(tty);
     this->channel_count = channel_count;
-
     for (uint8_t channel = 0; channel < channel_count; ++channel) {
         string topic_name = "target_" + channel_names.at(channel);
         ROS_INFO_STREAM("Subscribing to topic " << topic_name << " (" <<
@@ -38,7 +37,7 @@ void MaestroROS::handleTargetMessage(uint8_t channel, std_msgs::Float32 msg) {
     ROS_INFO_STREAM(channel << msg.data);
 }
 
-int main(int argc, char **argv) {
+int main_old(int argc, char **argv) {
     bool print_usage = false;
     char *tty;
     uint8_t channel_count;
@@ -55,7 +54,7 @@ int main(int argc, char **argv) {
             channel_count = boost::numeric_cast<uint8_t>(atoi(argv[2]));
             frequency = boost::lexical_cast<double>(argv[3]);
             for (uint8_t i = 0; i < channel_count; ++i) {
-                channel_names[i] = to_string(i);
+                channel_names[i] = to_string(+i);
             }
             for (int i = 4; i < argc; i += 2) {
                 uint8_t channel = boost::lexical_cast<uint8_t>(argv[i]);
@@ -83,4 +82,16 @@ int main(int argc, char **argv) {
     MaestroROS mros(nh, tty, channel_count, channel_names);
     ROS_INFO("Starting spin.");
     mros.spin(frequency);
+    return 0;
+}
+
+int main(int argc, char **argv) {
+    ros::init(argc, argv, "maestro_ros");
+    ros::NodeHandle nh("maestro_ros");
+    boost::function<void(std_msgs::Float32)> callback =
+            [](std_msgs::Float32 msg) {
+                ROS_INFO_STREAM(0 << msg.data);
+            };
+    nh.subscribe<std_msgs::Float32>("target_0", 1, callback);
+    ros::spin();
 }

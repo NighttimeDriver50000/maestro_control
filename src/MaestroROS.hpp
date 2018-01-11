@@ -13,7 +13,7 @@ using namespace std;
 
 class MaestroROS {
 public:
-    MaestroROS(ros::NodeHandle nh, const char *tty, uint8_t channel_count, 
+    MaestroROS(ros::NodeHandle &nh, const char *tty, uint8_t channel_count, 
             const map<uint8_t, string> &channel_names);
     void spin(double frequency);
     void spinOnce();
