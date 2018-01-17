@@ -1,8 +1,9 @@
 #include "MaestroControl.hpp"
+#include <string.h>
 
 int main(int argc, char **argv) {
     MaestroControl ctl;
-    if (argc == 2 && argv[1] != "-h") {
+    if (argc == 2 && strcmp(argv[1], "-h") != 0) {
         ctl.open(argv[1]);
     } else if (argc != 1) {
         cout << "usage: " << argv[0] << " [device file]\n"
@@ -14,6 +15,7 @@ int main(int argc, char **argv) {
     //cerr << ctl.getErrors() << "\n";
     //ctl.setTarget(0, 0);
     //ctl.zeroTargets(5);
+    cout << "Type `help ;` to see a list of commands.\n";
     ctl.shell(cin, cout, true);
     return 0;
 }
