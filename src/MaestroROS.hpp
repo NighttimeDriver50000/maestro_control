@@ -21,6 +21,7 @@ public:
 private:
     MaestroControl ctl;
     uint8_t channel_count;
+    vector<ros::Subscriber> subs;
 
     void handleTargetMessage(uint8_t channel, std_msgs::Float32 msg);
 };

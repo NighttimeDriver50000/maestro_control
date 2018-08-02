@@ -17,7 +17,8 @@ MaestroROS::MaestroROS(ros::NodeHandle &nh, const char *tty,
                 [this,channel](std_msgs::Float32 msg) {
                     handleTargetMessage(channel, msg);
                 };
-        nh.subscribe<std_msgs::Float32>(topic_name, 1, callback);
+        subs.push_back(nh.subscribe<std_msgs::Float32>(
+                topic_name, 1, callback));
     }
 }
 
@@ -34,10 +35,10 @@ void MaestroROS::spinOnce() {
 }
 
 void MaestroROS::handleTargetMessage(uint8_t channel, std_msgs::Float32 msg) {
-    ROS_INFO_STREAM(channel << msg.data);
+    ctl.setTarget(channel, msg.data);
 }
 
-int main_old(int argc, char **argv) {
+int main(int argc, char **argv) {
     bool print_usage = false;
     char *tty;
     uint8_t channel_count;
@@ -83,15 +84,4 @@ int main_old(int argc, char **argv) {
     ROS_INFO("Starting spin.");
     mros.spin(frequency);
     return 0;
-}
-
-int main(int argc, char **argv) {
-    ros::init(argc, argv, "maestro_ros");
-    ros::NodeHandle nh("maestro_ros");
-    boost::function<void(std_msgs::Float32)> callback =
-            [](std_msgs::Float32 msg) {
-                ROS_INFO_STREAM(0 << msg.data);
-            };
-    nh.subscribe<std_msgs::Float32>("target_0", 1, callback);
-    ros::spin();
 }
