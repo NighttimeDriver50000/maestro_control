@@ -1,7 +1,0 @@
-aptitude search '~i !~M ^ros-indigo'
-i   ros-indigo-costmap-2d           - This package provides an implementation of
-i   ros-indigo-desktop              - A metapackage to aggregate several package
-i   ros-indigo-fake-localization    - A ROS node that simply forwards odometry i
-i   ros-indigo-map-server           - map_server provides the map_server ROS Nod
-i   ros-indigo-stage-ros            - This package provides ROS specific hooks f
-i   ros-indigo-um7                  - The um7 package provides a C++ implementat
